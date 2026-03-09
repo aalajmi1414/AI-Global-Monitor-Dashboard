@@ -1,0 +1,39 @@
+name: 12-Hour AI Data Ingestion
+
+# This sets the timer
+on:
+  schedule:
+    # Runs at 00:00 and 12:00 UTC every day
+    - cron: '0 0,12 * * *'
+  # This line creates a button so you can run it manually anytime
+  workflow_dispatch: 
+
+# Gives the automation permission to save the updated data.json
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run ingestion script
+        run: python update_data.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "Automated update of AI legislation pipeline" || exit 0
+          git push
